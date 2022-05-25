@@ -3,6 +3,8 @@ const { cloneDeep } = require("lodash");
 const { URLSearchParams } = require("url");
 const twilio = require("twilio");
 const { getExpectedTwilioSignature } = require("twilio/lib/webhooks/webhooks");
+const { XMLParser } = require("fast-xml-parser");
+const { v4: uuid } = require("uuid");
 
 // Helpers
 function destinations(context) {
@@ -95,6 +97,30 @@ exports.handler = async function (context, event, callback) {
         return result;
       })
     );
+
+    const parser = new XMLParser();
+    const twimlResponses = new Set(
+      // Fetch "Response section of TWIML ack and validate that all destinations are sending the same response
+      responses.map((response) => parser.parse(response.data)["Response"])
+    );
+
+    if (twimlResponses.size !== 1) {
+      const reseponsesForDisplay = responses.map((response) => {
+        return {
+          url: response.request.responseURL,
+          status: response.status,
+          data: parser.parse(response.data)["Response"],
+        };
+      });
+      console.warn("TWIML responses are not the same", reseponsesForDisplay);
+      Sentry.withScope(function (scope) {
+        scope.setExtra("responses", reseponsesForDisplay);
+        Sentry.captureMessage("TWIML responses are not the same", "warn");
+      });
+    } else {
+      console.log("Matching TWIML responses");
+    }
+
     return callback(null, twiml);
   } catch (err) {
     console.error(err);
