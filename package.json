@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "start": "twilio-run",
     "deploy": "twilio-run deploy"
   },
@@ -16,6 +16,7 @@
     "twilio": "^3.56"
   },
   "devDependencies": {
+    "axios-mock-adapter": "^1.20.0",
     "jest": "^28.1.0",
     "twilio-run": "^3.4.2"
   },
