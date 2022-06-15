@@ -1,0 +1,28 @@
+{
+  "name": "twilio-webhook-proxy",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "test": "jest",
+    "start": "twilio-run",
+    "deploy": "twilio-run deploy"
+  },
+  "dependencies": {
+    "@sentry/node": "^6.19.7",
+    "@sentry/tracing": "^6.19.7",
+    "@twilio/runtime-handler": "1.2.3",
+    "axios": "^0.27.2",
+    "fast-xml-parser": "^4.0.7",
+    "lodash": "^4.17.21",
+    "twilio": "^3.56",
+    "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "axios-mock-adapter": "^1.20.0",
+    "jest": "^28.1.0",
+    "twilio-run": "^3.4.2"
+  },
+  "engines": {
+    "node": "14"
+  }
+}
