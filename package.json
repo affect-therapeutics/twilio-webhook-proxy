@@ -5,7 +5,8 @@
   "scripts": {
     "test": "jest",
     "start": "twilio-run",
-    "deploy": "twilio-run deploy"
+    "deploy": "twilio-run deploy",
+    "deploy-production": "twilio-run deploy --environment=production"
   },
   "dependencies": {
     "@sentry/node": "^6.19.7",
