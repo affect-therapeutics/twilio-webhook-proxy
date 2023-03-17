@@ -9,8 +9,10 @@ const { v4: uuid } = require("uuid");
 // Helpers
 function destinations(context) {
   let DESTINATIONS;
-  if (context.DESTINATIONS) {
-    DESTINATIONS = context.DESTINATIONS.split(",");
+  if (context.PROXY_DESTINATIONS) {
+    DESTINATIONS = context.PROXY_DESTINATIONS.split(",").filter(
+      (url) => url.length > 0
+    );
   } else {
     DESTINATIONS = [
       "https://api.kustomerapp.com/v1/twilio/webhooks/messages",
@@ -35,8 +37,13 @@ Sentry.init({
 });
 
 exports.handler = async function (context, event, callback) {
+  console.log("Event:", JSON.stringify(event));
   const transaction = Sentry.startTransaction({
+    op: "HandleIncomingTwilioWebhook",
     name: "HandleIncomingTwilioWebhook",
+  });
+  Sentry.setContext("event", {
+    event: event,
   });
   try {
     const AUTH_TOKEN = context.AUTH_TOKEN;

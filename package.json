@@ -6,7 +6,7 @@
     "test": "jest",
     "start": "twilio-run",
     "deploy": "twilio-run deploy",
-    "deploy-production": "twilio-run deploy --environment=production"
+    "deploy-prod": "twilio-run deploy --environment=prod"
   },
   "dependencies": {
     "@sentry/node": "^7.43.0",

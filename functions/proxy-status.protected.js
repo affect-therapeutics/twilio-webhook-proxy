@@ -7,8 +7,8 @@ const { getExpectedTwilioSignature } = require("twilio/lib/webhooks/webhooks");
 // Helpers
 function destinations(context) {
   let DESTINATIONS;
-  if (context.DESTINATIONS) {
-    DESTINATIONS = context.DESTINATIONS.split(",");
+  if (context.PROXY_STATUS_DESTINATIONS) {
+    DESTINATIONS = context.PROXY_STATUS_DESTINATIONS.split(",");
   } else {
     DESTINATIONS = [
       "https://api.kustomerapp.com/v1/twilio/webhooks/messagestatus",
@@ -34,7 +34,11 @@ Sentry.init({
 
 exports.handler = async function (context, event, callback) {
   const transaction = Sentry.startTransaction({
+    op: "HandleIncomingTwilioWebhook",
     name: "HandleIncomingTwilioWebhook",
+  });
+  Sentry.setContext("event", {
+    event: event,
   });
   try {
     const AUTH_TOKEN = context.AUTH_TOKEN;
