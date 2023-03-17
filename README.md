@@ -14,7 +14,9 @@ Use Twilio runtime functions to send a Twilio webhook to multiple destinations.
 
 Assuming valid Twilio credentials are provided, in local .env file
 
-    npm deploy
+** WARNING ** the local .env.production file is uploaded to twillio as env variables
+
+    npm run deploy
 
 ## Diagram
 
