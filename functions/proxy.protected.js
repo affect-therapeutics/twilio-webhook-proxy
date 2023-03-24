@@ -88,22 +88,26 @@ exports.handler = async function (context, event, callback) {
       return config;
     }
 
-    responses = await Promise.all(
-      destinations(context).map(async (url) => {
-        console.log(`Sending to ${url}`);
-        const params = new URLSearchParams(cloneDeep(body));
-        const result = await axios.post(
-          url,
-          params.toString(),
-          headersWithNewSignature(url, body, cloneDeep(config))
-        );
-        console.log(
-          `Sent ${url} Proxied Resulting TWIML:`,
-          JSON.stringify(result.data)
-        );
-        return result;
-      })
-    );
+    // Warning
+    // Destinations list is a ORDERED list, and will be called in order, waiting for each response before calling the next one  THIS IS INTENTIONAL, to prevent race conditions between destinations such as a destination that deletes media from Twillio
+
+    const destinationsList = destinations(context);
+    const responses = [];
+
+    for (const url of destinationsList) {
+      console.log(`Sending to ${url}`);
+      const params = new URLSearchParams(cloneDeep(body));
+      const result = await axios.post(
+        url,
+        params.toString(),
+        headersWithNewSignature(url, body, cloneDeep(config))
+      );
+      console.log(
+        `Sent ${url} Proxied Resulting TWIML:`,
+        JSON.stringify(result.data)
+      );
+      responses.push(result);
+    }
 
     const parser = new XMLParser();
     const twimlResponses = new Set(
