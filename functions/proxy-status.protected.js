@@ -5,7 +5,7 @@ const twilio = require("twilio");
 const { getExpectedTwilioSignature } = require("twilio/lib/webhooks/webhooks");
 
 // Helpers
-function destinations(context) {
+function destinations(context, originNumber) {
   let DESTINATIONS;
   if (context.PROXY_STATUS_DESTINATIONS) {
     DESTINATIONS = context.PROXY_STATUS_DESTINATIONS.split(",");
@@ -13,9 +13,35 @@ function destinations(context) {
     DESTINATIONS = [
       "https://api.kustomerapp.com/v1/twilio/webhooks/messagestatus",
       "https://api.iterable.com/twilio/statusCallback",
+      "+123456789$$https://single-number.com",
     ];
   }
-  return DESTINATIONS;
+  /*
+    Destinations are either "global", or "number" specfic.
+
+    Number only are seperated by $$ where pos 1, is an E164 phone number
+
+    Example:
+      // A global proxy
+      https://api.iterable.com/twilio/inbound
+
+      // A number only proxy
+      +15408225121$$https://api.iterable.com/twilio/inbound
+  */
+  return DESTINATIONS.map((el) => {
+    const components = el.split("$$");
+    if (components.length == 1) {
+      return components[0];
+    } else {
+      const [num , url] = components;
+
+      if (num === originNumber) {
+        return url;
+      } else {
+        return "";
+      }
+    }
+  }).filter((el) => el)
 }
 
 // Prepare error handling
@@ -84,7 +110,7 @@ exports.handler = async function (context, event, callback) {
     }
 
     responses = await Promise.all(
-      destinations(context).map(async (url) => {
+      destinations(context, body.To).map(async (url) => {
         console.log(`Sending to ${url}`);
         const params = new URLSearchParams(cloneDeep(body));
         const result = await axios.post(

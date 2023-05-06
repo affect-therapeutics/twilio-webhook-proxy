@@ -7,19 +7,44 @@ const { XMLParser } = require("fast-xml-parser");
 const { v4: uuid } = require("uuid");
 
 // Helpers
-function destinations(context) {
+
+function destinations(context, originNumber) {
   let DESTINATIONS;
   if (context.PROXY_DESTINATIONS) {
-    DESTINATIONS = context.PROXY_DESTINATIONS.split(",").filter(
-      (url) => url.length > 0
-    );
+    DESTINATIONS = context.PROXY_DESTINATIONS.split(",");
   } else {
     DESTINATIONS = [
       "https://api.kustomerapp.com/v1/twilio/webhooks/messages",
       "https://api.iterable.com/twilio/inbound",
     ];
   }
-  return DESTINATIONS;
+
+  /*
+    Destinations are either "global", or "number" specfic.
+
+    Number only are seperated by $$ where pos 1, is an E164 phone number
+
+    Example:
+      // A global proxy
+      https://api.iterable.com/twilio/inbound
+
+      // A number only proxy
+      +15408225121$$https://api.iterable.com/twilio/inbound
+  */
+  return DESTINATIONS.map((el) => {
+    const components = el.split("$$");
+    if (components.length == 1) {
+      return components[0];
+    } else {
+      const [num , url] = components;
+
+      if (num === originNumber) {
+        return url;
+      } else {
+        return "";
+      }
+    }
+  }).filter((el) => el)
 }
 
 // Prepare error handling
@@ -91,7 +116,7 @@ exports.handler = async function (context, event, callback) {
     // Warning
     // Destinations list is a ORDERED list, and will be called in order, waiting for each response before calling the next one  THIS IS INTENTIONAL, to prevent race conditions between destinations such as a destination that deletes media from Twillio
 
-    const destinationsList = destinations(context);
+    const destinationsList = destinations(context, body.To);
     const responses = [];
 
     for (const url of destinationsList) {
