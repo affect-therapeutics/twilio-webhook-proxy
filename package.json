@@ -5,8 +5,8 @@
   "scripts": {
     "test": "jest",
     "start": "twilio-run",
-    "deploy": "twilio-run deploy --env .env.staging -n twilio-webhook-proxy-staging --runtime node16",
-    "deploy-prod": "twilio-run deploy --environment=prod -n twilio-webhook-proxy-production --env .env.production --runtime node16"
+    "deploy": "twilio-run deploy --env .env.staging -n twilio-webhook-proxy-staging --runtime node18",
+    "deploy-prod": "twilio-run deploy --environment=prod -n twilio-webhook-proxy-production --env .env.production --runtime node18"
   },
   "dependencies": {
     "@sentry/node": "^7.43.0",
@@ -24,6 +24,6 @@
     "twilio-run": "^3.5.3"
   },
   "engines": {
-    "node": "16"
+    "node": "18"
   }
 }
