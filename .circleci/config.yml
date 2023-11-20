@@ -2,19 +2,9 @@ version: 2.1
 orbs:
   node: circleci/node@5.1.0
 
-jobs:
-  setup-node:
-    docker:
-      - image: cimg/base:stable
-    steps:
-      - checkout
-      - node/install:
-          node-version: "18.18"
-      - run: node --version
-
 workflows:
   test:
     jobs:
-      - setup-node
       - node/test:
+          version: "18.18"
           test-results-for: jest
