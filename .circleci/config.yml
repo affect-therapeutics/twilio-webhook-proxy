@@ -1,25 +1,20 @@
 version: 2.1
+orbs:
+  node: circleci/node@5.1.0
+
 jobs:
-  build:
-    working_directory: ~/repo
+  setup-node:
     docker:
-      - image: cimg/node:14.19.3
+      - image: cimg/base:stable
     steps:
       - checkout
-      - run:
-          name: update npm
-          command: "npm install -g npm@latest"
-      - restore_cache:
-          key: dependency-cache-{{ checksum "package-lock.json" }}
-      - run:
-          name: install dependencies
-          command: npm install
-      - save_cache:
-          key: dependency-cache-{{ checksum "package-lock.json" }}
-          paths:
-            - ./node_modules
-      - run:
-          name: run tests
-          command: npm test
-      - store_artifacts:
-          path: ~/repo/twilio-webhook-proxy
+      - node/install:
+          node-version: "18.18"
+      - run: node --version
+
+workflows:
+  test:
+    jobs:
+      - setup-node
+      - node/test:
+          test-results-for: jest
