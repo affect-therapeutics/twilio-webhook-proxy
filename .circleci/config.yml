@@ -1,10 +1,10 @@
 version: 2.1
 orbs:
-  node: circleci/node@5.1.0
+  node: circleci/node@7.2.1
 
 workflows:
   test:
     jobs:
       - node/test:
-          version: "18.18"
+          version: "22"
           test-results-for: jest
