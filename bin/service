@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)/scripts"
+
+print_help() {
+  cat <<EOS
+
+Services
+========
+Tools to make the developer's life easier.
+
+Usage:   service [command] {sub-command} --[option] <arg>
+
+Commands
+--------
+
+  env { encrypt | decrypt | edit }
+      Performs functions related to environment variable management
+        encrypt:  encrypts plain .env files to .enc.env files using SOPS
+        decrypt:  decrypts encrypted .enc.env files to plain .env files
+        edit:     opens the .enc.env file in the default editor for secure editing
+
+      Sub-commands:
+        {staging|production|all}  Specify which environment to operate on
+
+      Examples:
+        service env encrypt staging     # Encrypt staging environment
+        service env decrypt production  # Decrypt production environment
+        service env edit staging        # Edit encrypted staging file
+        service env encrypt all         # Encrypt both environments
+
+EOS
+}
+
+case $1 in
+env)
+  shift
+  sh "${SCRIPT_DIR}/env.sh" "$@"
+  ;;
+*)
+  print_help
+  ;;
+esac

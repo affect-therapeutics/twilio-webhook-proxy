@@ -15,10 +15,13 @@
         devShells.default = pkgs.mkShell {
           buildInputs = [
             pkgs.nodejs_22
+            pkgs.sops
           ];
 
           shellHook = ''
+            export PATH="$PWD/bin:$PATH"
             echo "Node.js $(node --version)"
+            echo "SOPS $(sops --version --check-for-updates)"
           '';
         };
       }
