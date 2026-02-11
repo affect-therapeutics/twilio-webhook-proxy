@@ -16,19 +16,21 @@ service env encrypt staging     # Encrypt after changes
 service env edit staging        # Edit encrypted file directly
 ```
 
-See [bin/README.md](bin/README.md) for setup instructions.
-
 ## Development
 
-    npm start -- --ngrok
+```bash
+service start -- --ngrok
+# or: npm start -- --ngrok
+```
+
+The `service` command proxies to npm scripts, so `service test`, `service start`, etc. work automatically.
 
 ## Deployment
 
-Assuming valid Twilio credentials are provided in local .env file:
-
 ```bash
 service env decrypt production  # Decrypt production env first
-npm run deploy
+service deploy                  # Deploy to staging
+service deploy-prod             # Deploy to production
 ```
 
 **WARNING:** The decrypted `.env.production` file is uploaded to Twilio as env variables
