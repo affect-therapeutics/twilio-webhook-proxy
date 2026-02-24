@@ -21,8 +21,6 @@ function destinations(context) {
 // Prepare error handling
 const Sentry = require("@sentry/node");
 
-const Tracing = require("@sentry/tracing");
-
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
 
@@ -33,7 +31,7 @@ Sentry.init({
 });
 
 exports.handler = async function (context, event, callback) {
-  const transaction = Sentry.startTransaction({
+  const transaction = Sentry.startInactiveSpan({
     op: "HandleIncomingTwilioWebhook",
     name: "HandleIncomingTwilioWebhook",
   });
@@ -106,6 +104,6 @@ exports.handler = async function (context, event, callback) {
 
     return callback(err);
   } finally {
-    transaction.finish();
+    transaction.end();
   }
 };

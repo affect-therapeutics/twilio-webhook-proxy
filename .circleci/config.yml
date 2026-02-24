@@ -2,9 +2,28 @@ version: 2.1
 orbs:
   node: circleci/node@7.2.1
 
+executors:
+  node_with_version:
+    parameters:
+      node_tag:
+        description: "The `cimg/node` Docker image version tag."
+        type: string
+        default: "22.14.0"
+    docker:
+      - image: cimg/node:<< parameters.node_tag >>
+        environment:
+          NODE_ENV: test
+
 workflows:
   test:
     jobs:
       - node/test:
-          version: "22"
+          context:
+            - GITHUB_CREDS
+          filters:
+            branches:
+              only: /.*/
+          executor:
+            name: node_with_version
+            node_tag: "22.14.0"
           test-results-for: jest
