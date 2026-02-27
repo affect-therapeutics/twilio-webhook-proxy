@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)/scripts"
+TOP_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+
+print_help() {
+  cat <<EOS
+
+Services
+========
+Tools to make the developer's life easier.
+
+Usage:   service [command] {sub-command} --[option] <arg>
+
+Commands
+--------
+
+  env { encrypt | decrypt | edit }
+      Performs functions related to environment variable management
+        encrypt:  encrypts plain .env files to .enc.env files using SOPS
+        decrypt:  decrypts encrypted .enc.env files to plain .env files
+        edit:     opens the .enc.env file in the default editor for secure editing
+
+      Sub-commands:
+        {staging|production|all}  Specify which environment to operate on
+
+      Examples:
+        service env encrypt staging     # Encrypt staging environment
+        service env decrypt production  # Decrypt production environment
+        service env edit staging        # Edit encrypted staging file
+        service env encrypt all         # Encrypt both environments
+
+NPM Scripts (fallback)
+----------------------
+Any unrecognized command is proxied to npm scripts from package.json:
+
+EOS
+
+  # Dynamically list available npm scripts
+  if command -v node &> /dev/null && [ -f "${TOP_DIR}/package.json" ]; then
+    node -e "
+      const pkg = require('${TOP_DIR}/package.json');
+      if (pkg.scripts && Object.keys(pkg.scripts).length > 0) {
+        Object.keys(pkg.scripts).forEach(script => {
+          const cmd = pkg.scripts[script];
+          const maxLen = 60;
+          const truncated = cmd.length > maxLen ? cmd.substring(0, maxLen) + '...' : cmd;
+          console.log('  service ' + script.padEnd(15) + '  # ' + truncated);
+        });
+      } else {
+        console.log('  (No scripts defined in package.json)');
+      }
+    " 2>/dev/null || echo "  (Unable to read package.json)"
+  else
+    echo "  (node not available or package.json not found)"
+  fi
+
+  cat <<EOS
+
+EOS
+}
+
+case $1 in
+"")
+  # No command provided, show help
+  print_help
+  ;;
+env)
+  shift
+  sh "${SCRIPT_DIR}/env.sh" "$@"
+  ;;
+*)
+  # Try to run as npm script
+  sh "${SCRIPT_DIR}/npm.sh" "$@"
+  ;;
+esac

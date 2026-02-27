@@ -4,13 +4,14 @@ const { URLSearchParams } = require("url");
 const twilio = require("twilio");
 const { getExpectedTwilioSignature } = require("twilio/lib/webhooks/webhooks");
 const { XMLParser } = require("fast-xml-parser");
-const { v4: uuid } = require("uuid");
 
 // Helpers
 function destinations(context) {
   let DESTINATIONS;
-  if (context.DESTINATIONS) {
-    DESTINATIONS = context.DESTINATIONS.split(",");
+  if (context.PROXY_DESTINATIONS) {
+    DESTINATIONS = context.PROXY_DESTINATIONS.split(",").filter(
+      (url) => url.length > 0
+    );
   } else {
     DESTINATIONS = [
       "https://api.kustomerapp.com/v1/twilio/webhooks/messages",
@@ -23,8 +24,6 @@ function destinations(context) {
 // Prepare error handling
 const Sentry = require("@sentry/node");
 
-const Tracing = require("@sentry/tracing");
-
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
 
@@ -35,8 +34,13 @@ Sentry.init({
 });
 
 exports.handler = async function (context, event, callback) {
-  const transaction = Sentry.startTransaction({
+  console.log("Event:", JSON.stringify(event));
+  const transaction = Sentry.startInactiveSpan({
+    op: "HandleIncomingTwilioWebhook",
     name: "HandleIncomingTwilioWebhook",
+  });
+  Sentry.setContext("event", {
+    event: event,
   });
   try {
     const AUTH_TOKEN = context.AUTH_TOKEN;
@@ -81,22 +85,26 @@ exports.handler = async function (context, event, callback) {
       return config;
     }
 
-    responses = await Promise.all(
-      destinations(context).map(async (url) => {
-        console.log(`Sending to ${url}`);
-        const params = new URLSearchParams(cloneDeep(body));
-        const result = await axios.post(
-          url,
-          params.toString(),
-          headersWithNewSignature(url, body, cloneDeep(config))
-        );
-        console.log(
-          `Sent ${url} Proxied Resulting TWIML:`,
-          JSON.stringify(result.data)
-        );
-        return result;
-      })
-    );
+    // Warning
+    // Destinations list is a ORDERED list, and will be called in order, waiting for each response before calling the next one  THIS IS INTENTIONAL, to prevent race conditions between destinations such as a destination that deletes media from Twillio
+
+    const destinationsList = destinations(context);
+    const responses = [];
+
+    for (const url of destinationsList) {
+      console.log(`Sending to ${url}`);
+      const params = new URLSearchParams(cloneDeep(body));
+      const result = await axios.post(
+        url,
+        params.toString(),
+        headersWithNewSignature(url, body, cloneDeep(config))
+      );
+      console.log(
+        `Sent ${url} Proxied Resulting TWIML:`,
+        JSON.stringify(result.data)
+      );
+      responses.push(result);
+    }
 
     const parser = new XMLParser();
     const twimlResponses = new Set(
@@ -128,6 +136,6 @@ exports.handler = async function (context, event, callback) {
 
     return callback(err);
   } finally {
-    transaction.finish();
+    transaction.end();
   }
 };

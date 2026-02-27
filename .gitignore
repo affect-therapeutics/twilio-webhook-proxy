@@ -81,6 +81,15 @@ web_modules/
 .env.test.local
 .env.production.local
 .env.local
+.env.staging
+.env.production
+
+# Allow encrypted env files to be committed
+!.enc.env.*
+
+# SOPS configuration (may contain sensitive key info)
+# Remove this line if you want to share SOPS config in the repo
+.sops.yaml
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
@@ -131,3 +140,5 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+.direnv
