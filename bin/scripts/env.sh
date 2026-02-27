@@ -66,7 +66,7 @@ do_decrypt() {
     return 1
   fi
 
-  sops -d --input-type dotenv "$source_file" >| "$target_file"
+  sops -d --input-type dotenv --output-type dotenv "$source_file" >| "$target_file"
   echo "Successfully decrypted ${source_file} to ${target_file}"
 }
 
