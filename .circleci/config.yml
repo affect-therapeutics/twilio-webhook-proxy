@@ -18,6 +18,7 @@ workflows:
   test:
     jobs:
       - node/test:
+          run-command: test -- --reporter=default --reporter=junit --outputFile.junit=/tmp/test-reports/vitest-junit.xml
           context:
             - GITHUB_CREDS
           filters:
@@ -26,4 +27,5 @@ workflows:
           executor:
             name: node_with_version
             node_tag: "22.14.0"
-          test-results-for: jest
+          test-results-for: other
+          test-results-path: /tmp/test-reports
