@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "test": "jest",
+    "test": "vitest run",
     "start": "twilio-run",
     "deploy": "twilio-run deploy --env .env.staging -n twilio-webhook-proxy-staging --runtime node22 --override-existing-project",
     "deploy-prod": "twilio-run deploy --environment=prod -n twilio-webhook-proxy-production --env .env.production --runtime node22 --override-existing-project"
@@ -12,16 +12,15 @@
     "@sentry/node": "^10.40.0",
     "@twilio/runtime-handler": "2.0.1",
     "axios": "^1.13.5",
-    "fast-xml-parser": "^5.3.7",
+    "fast-xml-parser": "^5.4.1",
     "lodash": "^4.17.23",
     "twilio": "^5.12.2",
     "uuid": "^9.0.1"
   },
   "devDependencies": {
     "axios-mock-adapter": "^2.1.0",
-    "jest": "^30.2.0",
-    "jest-junit": "^16.0.0",
-    "twilio-run": "^5.0.1"
+    "twilio-run": "^5.0.1",
+    "vitest": "^4.0.18"
   },
   "overrides": {
     "cross-spawn": "7.0.6"
